@@ -1,40 +1,52 @@
-# Grokipedia integration notes
+# Project changes and implementation notes
 
-## Changes made
+This file records the changes made to the repository, how they were implemented, and the reasons behind the decisions. It also calls out behavior that is intentionally not implemented.
 
-The Grokipedia client was added as an isolated Android library module rather than mixed into WikiReader's existing Wikipedia API and data packages:
+## App identity and repository
 
-- Added `:grokipedia` to `settings.gradle.kts`.
-- Added the `android-library` plugin alias to `gradle/libs.versions.toml`.
-- Created `grokipedia/` with its own Android library build configuration and package `org.nsh07.grokipedia`.
-- Added `GrokipediaApi`, Retrofit setup (`createGrokipediaApi`), and serializable response models in `grokipedia/src/main/java/org/nsh07/grokipedia/GrokipediaApi.kt`.
-- The client currently exposes read-only search, typeahead, page preview, page listing, stats, and TTS-section endpoints. Its JSON decoder ignores unknown fields, and a custom serializer accepts selected count/position values represented as either JSON strings or numbers.
-- Added `implementation(project(":grokipedia"))` to `app/build.gradle.kts`, making the library available to the app at compile time.
+- Changed the Android install ID to `quest.devinthebm.curiousreader` in `app/build.gradle.kts`. The Kotlin/Android `namespace` remains `org.nsh07.wikireader` so existing source imports, generated `R` references, and manifest component names do not need a risky mass rename.
+- Changed the launcher label to **Curious Reader** in the default and translated `app_name` resources. Updated repository-facing links in the README, About screen, Discoverium metadata, and template issue form to the new GitHub project.
+- Changed the local Git `origin` fetch/push URL to `https://github.com/Dev-in-the-BM/Curious-Reader`. This is repository configuration, not a push; no remote push was performed.
 
-## Not implemented
+## Android build and Retrofit setup
 
-No WikiReader screen, navigation, ViewModel, repository, or Wikipedia model was changed to call the Grokipedia client. There is no user-facing Grokipedia feature yet. The existing Wikipedia data/network layer remains separate. Write operations (suggestions and edit submissions) and CLI-only behavior were not ported.
+- Added the root version-catalog alias for `com.android.library` because the new Android library module needs that plugin declared through the root plugin catalog.
+- Replaced the obsolete Jake Wharton Retrofit serialization converter coordinate with Square's `com.squareup.retrofit2:converter-kotlinx-serialization`, aligned to Retrofit 3.0.0. Updated `AppContainer.kt` to use `retrofit2.converter.kotlinx.serialization.asConverterFactory`, matching that artifact's API.
+- The project targets Java/Kotlin 17. On this workstation, invoke Gradle with `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64` because the system default JDK 25 is incompatible with the configured Kotlin JVM target.
+- Added `**/build/` to `.gitignore` so module-level Gradle intermediates are not accidentally checked in.
+
+## Grokipedia client module
+
+- Added `:grokipedia` as a separate Android library module with package `org.nsh07.grokipedia`, its own `build.gradle.kts`, Retrofit client construction, and serializable response models in `grokipedia/src/main/java/org/nsh07/grokipedia/GrokipediaApi.kt`.
+- Kept it separate from the existing Wikipedia network/data packages so the new API models and endpoints do not alter existing Wikipedia behavior. The module currently provides read-only search, typeahead, preview, page-listing, stats, and TTS-section endpoints. Unknown JSON fields are ignored; selected count/position fields accept either JSON strings or numbers.
+- Added `implementation(project(":grokipedia"))` to the app so the module is available at compile time.
+- **Not implemented:** no screen, navigation destination, repository, ViewModel, or user flow calls Grokipedia yet. Write endpoints (including suggestions and edit submission) and CLI-only behavior were not ported.
+
+## Yapchik integration and window layout
+
+- Included the user-requested local module at `/home/naftali/Tinkering/Libraries/yapchik/yapchik`, added it as `:yapchik`, and called `Yapchik.install(this)` in `WikiReaderApplication.onCreate()`.
+- The Gradle project path is intentionally absolute to that local checkout, matching the request to use this library copy. Builds on another machine must provide that path or replace it with a published/copied module dependency.
+- Set Yapchik mode to `ON` so softkeys are available even if its automatic keypad-device detector does not recognize the TT290. Set navigation policy to `HIDE_WITH_BAR`; retained Yapchik's automatic content inset so Compose content is not obscured by the injected bar.
+- The activity uses an Android `Theme.Material` parent. Yapchik classifies this as `FRAMEWORK` and ordinarily reserves an OEM navigation-strip guard. This app sets `Yapchik.navGuardDp = 0` because the intended layout is for the softkey bar to sit flush at the bottom rather than be lifted by that extra guard.
+- Yapchik's navigation-bar policy controls the **bottom navigation bar**, not the **top status bar**. The status icons are therefore intentionally not hidden. `enableEdgeToEdge()` controls how app content lays out around system bars; it does not by itself hide the status bar.
+- Softkey actions are registered on the home screen with `Softkeys.of(activity)`: LEFT is Options; RIGHT is Top on article pages. The popup is positioned at the lower-left softkey edge and is opened by the LEFT softkey. No hamburger button is rendered at the bottom of the page.
+
+## D-pad and home-screen UX
+
+- Hid the home search/top bar while idle. Search now appears when chosen from the Options popup, which also contains Navigation, Share, Save/Remove, and Random. The Wikipedia-language option was removed from this popup because language remains available in app settings.
+- Removed the old horizontal floating toolbar because its actions now live in the softkey popup. Also removed the now-unused search-app-bar and floating-toolbar nested-scroll connections from the home Scaffold; hidden chrome should not participate in scroll dispatch to article/feed content.
+- Made feed and article LazyColumns focusable and gave them D-pad up/down handlers that animate list scrolling. The handlers use a Compose coroutine scope so list animations have the required frame clock. Existing Compose buttons/cards retain their normal focus behavior.
+- When the navigation rail expands, a `FocusRequester` sends focus to its first navigation item, so the D-pad can immediately operate the opened menu.
+- The Top softkey uses `scrollToItem(0)` in `HomeScreenViewModel`. An earlier `animateScrollToItem(0)` call crashed because it ran in `viewModelScope`, which does not provide Compose's `MonotonicFrameClock`; immediate scrolling avoids that invalid coroutine context.
+
+## Intermittent article-opening crash
+
+- ADB captured an intermittent Compose crash: `RoundedCornerShape` received a bottom corner of `-0.071 px` while recomposition updated a graphics-layer outline. This very small negative value is consistent with a spring-animated Dp corner radius overshooting below zero during a pressed-row release; it explains why the crash was intermittent rather than tied to one article's data.
+- Clamped animated corner radii to at least `0.dp` in history rows (including their thumbnails), language rows, and search-history/prefix/result rows before constructing `RoundedCornerShape`. Saved/settings row implementations already clamp their animated shape values.
+- The crash was not consistently reproducible, so the defensive clamp is based on the captured failure signature. Build/install was verified after the fix; repeated reproduction testing across problematic articles was not completed.
 
 ## Verification
 
-The app and Grokipedia module compile successfully with `:app:assembleDebug`. `:app:installDebug` has succeeded on the TT290 device for earlier revisions. The most recent source compiled, but installation failed when ADB reported no connected device; the final animated-corner crash guard still needs on-device verification.
-
-## Curious Reader package and build integration
-
-- Set the Android `applicationId` to `quest.devinthebm.curiousreader` while retaining the Kotlin namespace `org.nsh07.wikireader`.
-- Renamed the launcher label to “Curious Reader” in the default and localized string resources; updated the app's external metadata/links in `README.md` and `discoverium.yml`.
-- Added the root Android-library plugin alias and corrected the Retrofit kotlinx-serialization converter coordinate/API so the existing modules build with Retrofit 3.0.0.
-- The app uses Java/Kotlin 17. Build commands in this environment use `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`.
-- Set the Git `origin` remote to `https://github.com/Dev-in-the-BM/Curious-Reader` and updated project-facing repository links in the README, About screen, metadata, and template issue form.
-
-## Yapchik and D-pad UI
-
-- Included the local Yapchik module from `/home/naftali/Tinkering/Libraries/yapchik/yapchik`, installed it from `WikiReaderApplication`, and enabled its softkeys for this keypad-first app.
-- Set Yapchik to `HIDE_WITH_BAR`, retained its automatic content inset, and set `navGuardDp = 0`: the activity's Android `Theme.Material` parent is classified as `FRAMEWORK`, which enables Yapchik's automatic guard height. That guard can lift the softkey row; zero disables the extra offset so the row sits flush with the bottom navigation area.
-- Yapchik manages the bottom navigation bar, not the top status bar. The status indicators remain visible by design; edge-to-edge does not itself hide either system bar.
-- The home search/top bar is hidden at rest. The left Yapchik softkey opens a bottom-left options popup containing Search, Navigation, Share, Save/Remove, and Random; the Wikipedia-language item was intentionally removed because language is available in app settings. The right softkey smoothly scrolls an article to its top.
-- Removed the now-unused app-bar and floating-toolbar nested-scroll connections from the home screen so hidden chrome does not participate in feed/article scrolling. Feed and article lists are focusable and handle D-pad up/down with animated list scrolling; navigation rail requests focus when expanded.
-- Ordinary Compose buttons/cards remain focusable using their standard Compose interaction semantics. Runtime touch-scroll verification remains pending because the latest ADB install attempt had no connected device; the device had also shown the app's loading/logo state while network was unavailable.
-- The Top softkey scroll action uses `scrollToItem` from `viewModelScope`: `animateScrollToItem` crashed because that scope has no Compose `MonotonicFrameClock`. D-pad scrolling animation remains in the Compose UI scope.
-- Diagnosed an intermittent article-opening crash from ADB: `RoundedCornerShape` received a spring-animated corner of `-0.071 px`. Animated row/image corner values are now clamped to nonnegative Dp in history, language, and search result rows so spring overshoot cannot create invalid outlines.
-- Added `**/build/` to `.gitignore` so module-level Gradle outputs (including `grokipedia/build/`) are not committed.
+- `./gradlew :app:assembleDebug` succeeds with Java 17.
+- `./gradlew :app:installDebug` succeeded on the connected TT290 device with the current source. ADB has intermittently dropped the device between commands, so an individual install attempt may need to be retried after reconnecting it.
+- The crash signature was captured from device logcat. D-pad/list scrolling and edge-to-edge/nav-bar behavior were not exhaustively tested across all screens or devices.
