@@ -2,7 +2,7 @@
 <resources>
     <string name="cancel">Ακύρωση</string>
     <string name="app">Εφαρμογή</string>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="articlesSize">%1$s άρθρα %2$s γλώσσες</string>
     <string name="author">Συντάκτης</string>
     <string name="chooseColorScheme">Επέλεξε σύστημα χρωμάτων</string>

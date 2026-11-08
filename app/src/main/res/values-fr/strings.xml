@@ -13,7 +13,7 @@
     <string name="articlesSize">%1$s articles, %2$s langues</string>
     <string name="app">Application</string>
     <string name="appTagline">Lisez des pages Wikipédia sans distractions</string>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="articleDeleted">Article supprimé</string>
     <string name="author">Auteur</string>
     <string name="cancel">Annuler</string>

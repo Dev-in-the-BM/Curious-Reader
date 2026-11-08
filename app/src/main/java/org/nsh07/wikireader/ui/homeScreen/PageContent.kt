@@ -3,6 +3,8 @@ package org.nsh07.wikireader.ui.homeScreen
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -26,14 +28,25 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.nsh07.wikireader.data.WikiLang
 import org.nsh07.wikireader.ui.homeScreen.viewModel.HomeAction
 import org.nsh07.wikireader.ui.homeScreen.viewModel.HomeSubscreen
@@ -72,8 +85,16 @@ fun PageContent(
     val pageId = content.pageId
 
     val pullToRefreshState = rememberPullToRefreshState()
+    val listFocusRequester = remember(content.title) { FocusRequester() }
+    val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    var listHasDirectFocus by remember { mutableStateOf(false) }
 
     var isRefreshing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(content.title) {
+        listFocusRequester.requestFocus()
+    }
 
     if (showLanguageSheet)
         ArticleLanguageBottomSheet(
@@ -115,6 +136,22 @@ fun PageContent(
             contentPadding = insets,
             modifier = modifier
                 .fillMaxSize()
+                .focusRequester(listFocusRequester)
+                .onFocusChanged { listHasDirectFocus = it.isFocused }
+                .onPreviewKeyEvent { event ->
+                    if (listHasDirectFocus && event.type == KeyEventType.KeyDown &&
+                        (event.key == Key.DirectionDown || event.key == Key.DirectionUp)
+                    ) {
+                        val distance = with(density) { 220.dp.toPx() }
+                        scope.launch {
+                            content.listState.animateScrollBy(
+                                if (event.key == Key.DirectionDown) distance else -distance
+                            )
+                        }
+                        true
+                    } else false
+                }
+                .focusable()
         ) {
             item(key = content.title + "#--header--") { // Title + Image/description
                 with(sharedScope) {

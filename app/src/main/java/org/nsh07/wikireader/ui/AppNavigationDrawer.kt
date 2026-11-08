@@ -36,8 +36,10 @@ import androidx.compose.material3.WideNavigationRailValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
@@ -221,6 +223,7 @@ private fun AppNavigationRailContent(
     boxWidth: Dp,
     items: List<Item>
 ) {
+    val firstItemFocusRequester = remember { FocusRequester() }
     val expanded = state.targetValue == WideNavigationRailValue.Expanded
     val itemSpacing by animateDpAsState(
         if (!expanded) 16.dp else 0.dp,
@@ -239,6 +242,10 @@ private fun AppNavigationRailContent(
         selectedIndicatorColor = colorScheme.secondaryContainer,
     )
 
+    LaunchedEffect(expanded) {
+        if (expanded) firstItemFocusRequester.requestFocus()
+    }
+
     val sectionColors = WideNavigationRailItemDefaults.colors(
         unselectedIconColor = colorScheme.onSurfaceVariant,
         unselectedTextColor = colorScheme.onSurfaceVariant,
@@ -253,9 +260,10 @@ private fun AppNavigationRailContent(
             rememberScrollState()
         )
     ) {
-        items.fastForEach { item ->
+        items.forEachIndexed { index, item ->
             val selected = backStackEntry?.destination?.hasRoute(item.route) == true
             WideNavigationRailItem(
+                modifier = if (index == 0) Modifier.focusRequester(firstItemFocusRequester) else Modifier,
                 selected = selected,
                 enabled = item.enabled,
                 onClick = {

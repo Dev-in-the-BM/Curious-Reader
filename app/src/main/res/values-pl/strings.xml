@@ -60,7 +60,7 @@
     <string name="snackbarUnableToDelete">Nie można usunąć artykułu: %1$s</string>
     <string name="translate">Przetłumacz</string>
     <string name="wikipedia_logo">Logo Wikipedii</string>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="instructions">Instrukcje</string>
     <string name="moreOptions">Więcej opcji</string>
     <string name="colorSchemeColor">Kolor</string>

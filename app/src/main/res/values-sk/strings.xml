@@ -2,7 +2,7 @@
 <resources>
     <string name="app">Aplikácia</string>
     <string name="appTagline">Čítajte Wikipédiu bez rušenia</string>
-    <string name="app_name">Wikireader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="articleDeleted">Článok vymazaný</string>
     <string name="articlesSize">Počet článkov: %1$s, počet jazykov: %2$s</string>
     <string name="author">Autor</string>

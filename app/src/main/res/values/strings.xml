@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="navigation_drawer">Navigation</string>
     <string name="about">About</string>
     <string name="app">App</string>
     <string name="appTagline">Read Wikipedia pages distraction-free</string>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="articleDeleted">Article deleted</string>
     <string name="articlesSize">%1$s articles, %2$s languages</string>
     <string name="author">Author</string>

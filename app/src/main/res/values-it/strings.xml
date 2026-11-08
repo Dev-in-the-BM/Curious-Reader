@@ -3,7 +3,7 @@
     <string name="openInBrowser">Apri nel browser</string>
     <string name="about">Informazioni</string>
     <string name="appTagline">Leggi le pagine di Wikipedia senza distrazioni</string>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="articleDeleted">Articolo eliminato</string>
     <string name="articlesSize">%1$s articoli, %2$s lingue</string>
     <string name="author">Autore</string>

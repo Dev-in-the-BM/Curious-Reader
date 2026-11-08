@@ -16,7 +16,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "org.nsh07.wikireader"
+        applicationId = "quest.devinthebm.curiousreader"
         minSdk = 26
         targetSdk = 36
         versionCode = 53
@@ -77,6 +77,8 @@ tasks.withType(Test::class) {
 }
 
 dependencies {
+    implementation(project(":yapchik"))
+    implementation(project(":grokipedia"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.adaptive)

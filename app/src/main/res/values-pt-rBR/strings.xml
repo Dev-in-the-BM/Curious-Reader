@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="translateDesc">Ajude a traduzir o WikiReader para o seu idioma</string>
     <string name="searchWikipedia">Pesquisar na Wikipédia</string>
     <string name="resetSettingsIconDesc">Redefinir as configurações para o padrão</string>

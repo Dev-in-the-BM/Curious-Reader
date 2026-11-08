@@ -21,4 +21,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "WikiReader"
 include(":app")
+include(":grokipedia")
 include(":baselineprofile")
+include(":yapchik")
+project(":yapchik").projectDir = file("/home/naftali/Tinkering/Libraries/yapchik/yapchik")

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="clear">Очистить</string>
     <string name="search">Найти</string>
     <string name="cancel">Отмена</string>

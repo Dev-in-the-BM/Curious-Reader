@@ -13,14 +13,14 @@
 <a href="https://hosted.weblate.org/engage/wikireader/?utm_source=widget">
   <img src="https://img.shields.io/weblate/progress/wikireader?logo=weblate&labelColor=1a1a1a&color=2ecba9">
 </a>
-<a href="https://github.com/nsh07/WikiReader/releases/latest">
-  <img src="https://img.shields.io/github/v/release/nsh07/WikiReader?logo=github&labelColor=1a1a1a">
+<a href="https://github.com/Dev-in-the-BM/Curious-Reader/releases/latest">
+  <img src="https://img.shields.io/github/v/release/Dev-in-the-BM/Curious-Reader?logo=github&labelColor=1a1a1a">
 </a>
-<a href="https://f-droid.org/packages/org.nsh07.wikireader">
-  <img src="https://img.shields.io/f-droid/v/org.nsh07.wikireader?logo=f-droid&labelColor=1a1a1a">
+<a href="https://f-droid.org/packages/quest.devinthebm.curiousreader">
+  <img src="https://img.shields.io/f-droid/v/quest.devinthebm.curiousreader?logo=f-droid&labelColor=1a1a1a">
 </a>
-<a href="https://github.com/nsh07/WikiReader/blob/main/LICENSE">
-  <img src="https://img.shields.io/github/license/nsh07/wikireader?logo=gnu&color=blue&labelColor=1a1a1a">
+<a href="https://github.com/Dev-in-the-BM/Curious-Reader/blob/main/LICENSE">
+  <img src="https://img.shields.io/github/license/Dev-in-the-BM/Curious-Reader?logo=gnu&color=blue&labelColor=1a1a1a">
 </a>
 <img src="https://img.shields.io/badge/API-26+-blue?logo=android&labelColor=1a1a1a">
 <br/><br/>
@@ -30,10 +30,10 @@ A lightweight Android app for reading Wikipedia articles distraction-free
 Supports light mode, dark mode, Material You dynamic colors and 300+ Wikipedia languages
 
 <p>
-  <a href="https://apt.izzysoft.de/fdroid/index/apk/org.nsh07.wikireader">
+  <a href="https://apt.izzysoft.de/fdroid/index/apk/quest.devinthebm.curiousreader">
     <img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" width="200">
   </a>
-  <a href="https://f-droid.org/packages/org.nsh07.wikireader">
+  <a href="https://f-droid.org/packages/quest.devinthebm.curiousreader">
       <img src="https://f-droid.org/badge/get-it-on.png" width="200">
   </a>
 </p>
@@ -106,7 +106,7 @@ translating this project into languages you know.
   on [Obtainium](https://obtainium.imranr.dev/) to get updates directly from GitHub releases. This
   is the fastest way to install and update WikiReader.
 - **GitHub releases**: Alternatively, you can manually download and install APKs from
-  the [Releases](https://github.com/nsh07/WikiReader/releases/latest) section of this repo (This
+  the [Releases](https://github.com/Dev-in-the-BM/Curious-Reader/releases/latest) section of this repo (This
   method is not recommended, use Obtainium instead).
 
 > [!TIP]

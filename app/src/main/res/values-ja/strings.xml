@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about">アプリについて</string>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="cancel">キャンセル</string>
     <string name="onThisDay">今日は何の日</string>
     <string name="openInBrowser">ブラウザで開く</string>

@@ -6,7 +6,7 @@
     <string name="dialogDeleteHistoryItem">\"%1$s\" wird dauerhaft von deinem Suchverlauf gelöscht.</string>
     <string name="articlesSize">%1$s Artikel, %2$s Sprachen</string>
     <string name="colorSchemeColor">Farbe</string>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="clear">Löschen</string>
     <string name="deleteAllArticles">Alle Artikel löschen?</string>
     <string name="app">App</string>

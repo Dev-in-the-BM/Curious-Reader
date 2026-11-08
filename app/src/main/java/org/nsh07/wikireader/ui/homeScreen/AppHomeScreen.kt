@@ -34,6 +34,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.FloatingToolbarDefaults.vibrantFloatingToolbarColors
@@ -128,6 +130,10 @@ fun AppHomeScreen(
     languageSearchStr: String,
     languageSearchQuery: String,
     showLanguageSheet: Boolean,
+    showOptionsMenu: Boolean,
+    onOptionsMenuDismiss: () -> Unit,
+    onSearchClick: () -> Unit,
+    onOpenNavigationDrawer: () -> Unit,
     deepLinkHandled: Boolean,
     setShowArticleLanguageSheet: (Boolean) -> Unit,
     onAction: (HomeAction) -> Unit,
@@ -410,187 +416,51 @@ fun AppHomeScreen(
             }
         }
 
-        AnimatedVisibility(
-            backStack.last() !is HomeSubscreen.Image,
-            enter = slideInVertically(
-                motionScheme.defaultSpatialSpec(),
-                initialOffsetY = {
-                    with(density) {
-                        it + insets.calculateBottomPadding().roundToPx() + 1
-                    }
-                }
-            ),
-            exit = slideOutVertically(
-                motionScheme.defaultSpatialSpec(),
-                targetOffsetY = {
-                    with(density) {
-                        it + insets.calculateBottomPadding().roundToPx() + 1
-                    }
-                }
-            ),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-            HorizontalFloatingToolbar(
-                expanded = true,
-                scrollBehavior = floatingToolbarScrollBehaviour,
-                colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors(),
-                floatingActionButton = {
-                    TooltipBox(
-                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                            TooltipAnchorPosition.Above
-                        ),
-                        tooltip = { PlainTooltip { Text(stringResource(R.string.search)) } },
-                        state = rememberTooltipState()
-                    ) {
-                        FloatingToolbarDefaults.VibrantFloatingActionButton(
-                            onClick = { onAction(HomeAction.FocusSearchBar) }
-                        ) {
-                            Icon(
-                                painterResource(R.drawable.search),
-                                stringResource(R.string.search)
-                            )
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .offset(y = -(insets.calculateBottomPadding()))
-            ) {
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                        TooltipAnchorPosition.Above
-                    ),
-                    tooltip = { PlainTooltip { Text(stringResource(R.string.settingWikipediaLanguage)) } },
-                    state = rememberTooltipState()
+        if (backStack.last() !is HomeSubscreen.Image) {
+            Box(Modifier.align(Alignment.BottomStart).padding(start = 0.dp, bottom = insets.calculateBottomPadding())) {
+                DropdownMenu(
+                    expanded = showOptionsMenu,
+                    onDismissRequest = onOptionsMenuDismiss
                 ) {
-                    IconButton(
-                        onClick = { setShowArticleLanguageSheet(true) },
-                        enabled = backStack.last() is HomeSubscreen.Feed ||
-                                (backStack.last() is HomeSubscreen.Article && (backStack.last() as HomeSubscreen.Article).langs?.isEmpty() == false)
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.translate),
-                            stringResource(R.string.settingWikipediaLanguage)
-                        )
-                    }
-                }
-
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                        TooltipAnchorPosition.Above
-                    ),
-                    tooltip = { PlainTooltip { Text(stringResource(R.string.sharePage)) } },
-                    state = rememberTooltipState()
-                ) {
-                    IconButton(
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.search)) },
+                        leadingIcon = { Icon(painterResource(R.drawable.search), null) },
+                        onClick = onSearchClick
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.navigation_drawer)) },
+                        leadingIcon = { Icon(painterResource(R.drawable.menu), null) },
+                        onClick = { onOptionsMenuDismiss(); onOpenNavigationDrawer() }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.sharePage)) },
+                        leadingIcon = { Icon(painterResource(R.drawable.share), null) },
                         enabled = backStack.last() is HomeSubscreen.Article,
-                        onClick = remember(
-                            backStack.last(),
-                            preferencesState.lang
-                        ) {
-                            { context.startActivity(shareIntent) }
-                        }
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.share),
-                            contentDescription = stringResource(R.string.sharePage)
-                        )
-                    }
-                }
-
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                        TooltipAnchorPosition.Above
-                    ),
-                    tooltip = {
-                        PlainTooltip {
-                            Text(
-                                when ((backStack.last() as HomeSubscreen.Article).savedStatus) {
-                                    SavedStatus.SAVED -> stringResource(R.string.deleteArticle)
-                                    else -> stringResource(R.string.downloadArticle)
-                                }
-                            )
-                        }
-                    },
-                    state = rememberTooltipState()
-                ) {
-                    FilledTonalIconToggleButton(
-                        checked = backStack.last() is HomeSubscreen.Article && (backStack.last() as HomeSubscreen.Article).savedStatus == SavedStatus.SAVED,
+                        onClick = { onOptionsMenuDismiss(); context.startActivity(shareIntent) }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text(stringResource(
+                                if (backStack.last() is HomeSubscreen.Article && (backStack.last() as HomeSubscreen.Article).savedStatus == SavedStatus.SAVED)
+                                    R.string.deleteArticle else R.string.downloadArticle
+                            ))
+                        },
+                        leadingIcon = { Icon(painterResource(R.drawable.download), null) },
                         enabled = backStack.last() is HomeSubscreen.Article,
-                        colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
-                            containerColor = vibrantFloatingToolbarColors().toolbarContainerColor,
-                            contentColor = vibrantFloatingToolbarColors().toolbarContentColor,
-                            checkedContainerColor = colorScheme.surfaceContainer,
-                            checkedContentColor = colorScheme.onSurface,
-                            disabledContainerColor = vibrantFloatingToolbarColors().toolbarContainerColor,
-                            disabledContentColor = colorScheme.onPrimaryContainer.copy(alpha = 0.38f)
-                        ),
-                        onCheckedChange = {
-                            onAction(
-                                HomeAction.SaveArticle(
-                                    preferencesState.lang,
-                                    context.getString(R.string.snackbarUnableToSave),
-                                    context.getString(R.string.snackbarUnableToDelete)
-                                )
-                            )
+                        onClick = {
+                            onOptionsMenuDismiss()
+                            onAction(HomeAction.SaveArticle(
+                                preferencesState.lang,
+                                context.getString(R.string.snackbarUnableToSave),
+                                context.getString(R.string.snackbarUnableToDelete)
+                            ))
                         }
-                    ) {
-                        AnimatedContent(
-                            if (backStack.last() is HomeSubscreen.Article)
-                                (backStack.last() as HomeSubscreen.Article).savedStatus
-                            else SavedStatus.NOT_SAVED,
-                            label = "saveAnimation"
-                        ) { saved ->
-                            when (saved) {
-                                SavedStatus.SAVED ->
-                                    Icon(
-                                        painterResource(R.drawable.download_done),
-                                        contentDescription = stringResource(R.string.deleteArticle)
-                                    )
-
-                                SavedStatus.SAVING -> LoadingIndicator()
-
-                                else ->
-                                    Icon(
-                                        painterResource(R.drawable.download),
-                                        contentDescription = stringResource(R.string.downloadArticle)
-                                    )
-                            }
-                        }
-                    }
-                }
-
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                        TooltipAnchorPosition.Above
-                    ),
-                    tooltip = { PlainTooltip { Text(stringResource(R.string.scroll_to_top)) } },
-                    state = rememberTooltipState()
-                ) {
-                    IconButton(
-                        onClick = { onAction(HomeAction.ScrollToTop) },
-                        enabled = true
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.upward),
-                            contentDescription = stringResource(R.string.scroll_to_top)
-                        )
-                    }
-                }
-
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                        TooltipAnchorPosition.Above
-                    ),
-                    tooltip = { PlainTooltip { Text(stringResource(R.string.randomArticle)) } },
-                    state = rememberTooltipState()
-                ) {
-                    IconButton(onClick = { onAction(HomeAction.LoadRandom) }) {
-                        Icon(
-                            painterResource(R.drawable.shuffle),
-                            contentDescription = stringResource(R.string.randomArticle)
-                        )
-                    }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.randomArticle)) },
+                        leadingIcon = { Icon(painterResource(R.drawable.shuffle), null) },
+                        onClick = { onOptionsMenuDismiss(); onAction(HomeAction.LoadRandom) }
+                    )
                 }
             }
         }

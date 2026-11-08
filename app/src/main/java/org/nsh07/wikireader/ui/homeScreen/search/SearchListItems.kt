@@ -32,6 +32,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.coerceAtLeast
 import org.nsh07.wikireader.R
 import org.nsh07.wikireader.data.SearchHistoryItem
 import org.nsh07.wikireader.data.WikiPrefixSearchResult
@@ -104,10 +105,10 @@ fun LazyItemScope.SearchHistoryListItem(
             .padding(horizontal = 16.dp)
             .clip(
                 RoundedCornerShape(
-                    topStart = top,
-                    topEnd = top,
-                    bottomStart = bottom,
-                    bottomEnd = bottom
+                    topStart = top.coerceAtLeast(0.dp),
+                    topEnd = top.coerceAtLeast(0.dp),
+                    bottomStart = bottom.coerceAtLeast(0.dp),
+                    bottomEnd = bottom.coerceAtLeast(0.dp)
                 )
             )
             .combinedClickable(
@@ -193,10 +194,10 @@ fun LazyItemScope.PrefixSearchResultListItem(
             .padding(horizontal = 16.dp)
             .clip(
                 RoundedCornerShape(
-                    topStart = top,
-                    topEnd = top,
-                    bottomStart = bottom,
-                    bottomEnd = bottom
+                    topStart = top.coerceAtLeast(0.dp),
+                    topEnd = top.coerceAtLeast(0.dp),
+                    bottomStart = bottom.coerceAtLeast(0.dp),
+                    bottomEnd = bottom.coerceAtLeast(0.dp)
                 )
             )
             .clickable(
@@ -291,10 +292,10 @@ fun LazyItemScope.SearchResultListItem(
             .padding(horizontal = 16.dp)
             .clip(
                 RoundedCornerShape(
-                    topStart = top,
-                    topEnd = top,
-                    bottomStart = bottom,
-                    bottomEnd = bottom
+                    topStart = top.coerceAtLeast(0.dp),
+                    topEnd = top.coerceAtLeast(0.dp),
+                    bottomStart = bottom.coerceAtLeast(0.dp),
+                    bottomEnd = bottom.coerceAtLeast(0.dp)
                 )
             )
             .clickable(

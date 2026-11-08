@@ -12,12 +12,21 @@ import coil3.svg.SvgDecoder
 import okhttp3.OkHttpClient
 import org.nsh07.wikireader.data.AppContainer
 import org.nsh07.wikireader.data.DefaultAppContainer
+import com.theonionsarewatching.yapchik.Yapchik
+import com.theonionsarewatching.yapchik.SoftkeyMode
 
 class WikiReaderApplication : Application(), SingletonImageLoader.Factory {
     lateinit var container: AppContainer
 
     override fun onCreate() {
         super.onCreate()
+        Yapchik.install(this)
+        Yapchik.mode = SoftkeyMode.ON
+        Yapchik.navigationBarPolicy = Yapchik.NavBarPolicy.HIDE_WITH_BAR
+        // This app's Material/Compose content already fills the edge-to-edge
+        // window. Do not reserve an extra OEM navigation-strip guard below the
+        // softkey bar; it would lift the bar above the system navigation area.
+        Yapchik.navGuardDp = 0
         container = DefaultAppContainer(this)
     }
 

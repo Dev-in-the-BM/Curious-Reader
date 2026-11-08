@@ -2,7 +2,7 @@
 <resources>
     <string name="articleDeleted">Artículo eliminado</string>
     <string name="back">Volver</string>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="about">Acerca de</string>
     <string name="articlesSize">%1$s artículos, %2$s idiomas</string>
     <string name="author">Autor</string>

@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.coerceAtLeast
 import org.nsh07.wikireader.R
 import org.nsh07.wikireader.ui.theme.CustomColors.listItemColors
 
@@ -75,10 +76,10 @@ fun LanguageListItem(
             .clip(
                 if (selected) CircleShape
                 else RoundedCornerShape(
-                    topStart = top,
-                    topEnd = top,
-                    bottomStart = bottom,
-                    bottomEnd = bottom
+                    topStart = top.coerceAtLeast(0.dp),
+                    topEnd = top.coerceAtLeast(0.dp),
+                    bottomStart = bottom.coerceAtLeast(0.dp),
+                    bottomEnd = bottom.coerceAtLeast(0.dp)
                 )
             )
             .clickable(

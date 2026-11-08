@@ -30,7 +30,7 @@
     <string name="themeSystemDefault">Як у системі</string>
     <string name="up_arrow">Повернутися нагору</string>
     <string name="wikipedia_logo">Лого Вікіпедії</string>
-    <string name="app_name">WikiReader</string>
+    <string name="app_name">Curious Reader</string>
     <string name="collapse_section">Згорнути розділ</string>
     <string name="settingDataSaverDesc">Вимкнути зображення та стрічку. Зображення сторінок все ще можна відкрити, натиснувши на картку з описом.</string>
     <string name="settingImmersiveMode">Режим занурення</string>

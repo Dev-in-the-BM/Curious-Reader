@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.ButtonDefaults
@@ -54,6 +56,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -121,6 +132,13 @@ fun ArticleFeed(
             .withLocale(configuration.getLocales().get(0))
     }
     val coroutineScope = rememberCoroutineScope()
+    val listFocusRequester = remember { FocusRequester() }
+    val density = LocalDensity.current
+    var listHasDirectFocus by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        listFocusRequester.requestFocus()
+    }
 
     LaunchedEffect(isRefreshing) {
         delay(3000)
@@ -148,7 +166,24 @@ fun ArticleFeed(
         LazyColumn(
             state = listState,
             contentPadding = insets,
-            modifier = modifier.fillMaxSize()
+            modifier = modifier
+                .fillMaxSize()
+                .focusRequester(listFocusRequester)
+                .onFocusChanged { listHasDirectFocus = it.isFocused }
+                .onPreviewKeyEvent { event ->
+                    if (listHasDirectFocus && event.type == KeyEventType.KeyDown &&
+                        (event.key == Key.DirectionDown || event.key == Key.DirectionUp)
+                    ) {
+                        val distance = with(density) { 220.dp.toPx() }
+                        coroutineScope.launch {
+                            listState.animateScrollBy(
+                                if (event.key == Key.DirectionDown) distance else -distance
+                            )
+                        }
+                        true
+                    } else false
+                }
+                .focusable()
         ) {
             if (feedContent.tfa != null) {
                 item {

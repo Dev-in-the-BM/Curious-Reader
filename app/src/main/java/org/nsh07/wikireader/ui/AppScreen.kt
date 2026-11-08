@@ -28,8 +28,6 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingToolbarDefaults
-import androidx.compose.material3.FloatingToolbarExitDirection
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -39,11 +37,12 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.material3.rememberWideNavigationRailState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.SearchBarValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -57,7 +56,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -73,6 +71,7 @@ import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import com.theonionsarewatching.yapchik.Softkeys
 import org.nsh07.wikireader.R.string
 import org.nsh07.wikireader.data.SearchHistoryItem
 import org.nsh07.wikireader.data.UserLanguage
@@ -123,23 +122,13 @@ fun AppScreen(
     val languageSearchQuery by viewModel.languageSearchQuery.collectAsState("")
     val motionScheme = motionScheme
     var showArticleLanguageSheet by rememberSaveable { mutableStateOf(false) }
+    var showHomeOptions by rememberSaveable { mutableStateOf(false) }
     var deepLinkHandled by rememberSaveable { mutableStateOf(false) }
 
-    val searchBarScrollBehavior =
-        if (
-            !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND) ||
-            preferencesState.immersiveMode
-        ) TopAppBarDefaults.enterAlwaysScrollBehavior()
-        else TopAppBarDefaults.pinnedScrollBehavior()
-    val floatingToolbarScrollBehaviour =
-        if (
-            !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND) ||
-            preferencesState.immersiveMode
-        ) FloatingToolbarDefaults.exitAlwaysScrollBehavior(
-            exitDirection = FloatingToolbarExitDirection.Bottom,
-            snapAnimationSpec = motionScheme.defaultSpatialSpec()
-        )
-        else null
+    // The home search UI is hidden outside active search, so it must not keep
+    // an app-bar/toolbar nested-scroll connection attached to the article list.
+    val searchBarScrollBehavior = null
+    val floatingToolbarScrollBehaviour = null
     val textFieldState = viewModel.textFieldState
 
     val snackBarHostState = viewModel.snackBarHostState
@@ -149,6 +138,20 @@ fun AppScreen(
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+    val activity = LocalContext.current as? android.app.Activity
+    LaunchedEffect(activity, backStack.last()) {
+        activity?.let { host ->
+            Softkeys.of(host).set {
+                left("Options") { showHomeOptions = true }
+                right("Top") {
+                    if (backStack.last() is HomeSubscreen.Article) {
+                        viewModel.onAction(HomeAction.ScrollToTop)
+                    }
+                }
+            }
+        }
+    }
 
     AppNavigationDrawer(
         state = railState,
@@ -273,7 +276,8 @@ fun AppScreen(
                 Scaffold(
                     topBar = {
                         AnimatedVisibility(
-                            backStack.last() !is HomeSubscreen.Image,
+                            backStack.last() !is HomeSubscreen.Image &&
+                                    (searchBarState.currentValue == SearchBarValue.Expanded || searchBarState.targetValue == SearchBarValue.Expanded),
                             enter = slideInVertically(
                                 motionScheme.defaultSpatialSpec(),
                                 initialOffsetY = { -it }
@@ -324,15 +328,7 @@ fun AppScreen(
                             ScaffoldDefaults.contentWindowInsets
                                 .only(WindowInsetsSides.Top + WindowInsetsSides.Bottom + WindowInsetsSides.End)
                         else ScaffoldDefaults.contentWindowInsets,
-                    modifier = if (floatingToolbarScrollBehaviour != null)
-                        Modifier
-                            .fillMaxSize()
-                            .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
-                            .nestedScroll(floatingToolbarScrollBehaviour)
-                    else
-                        Modifier
-                            .fillMaxSize()
-                            .nestedScroll(searchBarScrollBehavior.nestedScrollConnection)
+                    modifier = Modifier.fillMaxSize()
                 ) { insets ->
                     AppHomeScreen(
                         backStack = backStack,
@@ -343,6 +339,19 @@ fun AppScreen(
                         languageSearchStr = languageSearchStr,
                         languageSearchQuery = languageSearchQuery,
                         showLanguageSheet = showArticleLanguageSheet,
+                        showOptionsMenu = showHomeOptions,
+                        onOptionsMenuDismiss = { showHomeOptions = false },
+                        onSearchClick = {
+                            showHomeOptions = false
+                            scope.launch {
+                                searchBarState.animateToExpanded()
+                                viewModel.onAction(HomeAction.FocusSearchBar)
+                            }
+                        },
+                        onOpenNavigationDrawer = {
+                            showHomeOptions = false
+                            scope.launch { railState.expand() }
+                        },
                         deepLinkHandled = deepLinkHandled,
                         onAction = viewModel::onAction,
                         onSettingsAction = settingsViewModel::onAction,
